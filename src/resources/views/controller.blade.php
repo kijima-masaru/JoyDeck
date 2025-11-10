@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -29,18 +29,13 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             max-width: 1200px;
             width: 100%;
+            border: 2px solid black;
         }
 
         h1 {
             color: #333;
             margin-bottom: 10px;
             text-align: center;
-        }
-
-        .subtitle {
-            color: #666;
-            text-align: center;
-            margin-bottom: 30px;
         }
 
         .status {
@@ -63,11 +58,60 @@
             border: 1px solid #f5c6cb;
         }
 
+        .accordion {
+            margin-bottom: 30px;
+        }
+
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .accordion-header:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .accordion-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .accordion-icon {
+            font-size: 16px;
+            transition: transform 0.3s;
+        }
+
+        .accordion-icon.open {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .accordion-content.open {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in;
+        }
+
         .key-mapping {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 15px;
-            margin-bottom: 30px;
+            margin-top: 15px;
+            padding-top: 15px;
         }
 
         .key-item {
@@ -98,28 +142,6 @@
             border-radius: 4px;
             min-width: 80px;
             text-align: center;
-        }
-
-        .instructions {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .instructions h3 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-
-        .instructions ul {
-            color: #856404;
-            margin-left: 20px;
-        }
-
-        .instructions li {
-            margin-bottom: 5px;
         }
 
         .button-group {
@@ -169,11 +191,11 @@
             background: #f8f9fa;
             border-radius: 8px;
             padding: 15px;
-            max-height: 200px;
+            max-height: 400px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
             font-size: 12px;
-            margin-top: 20px;
+            margin-top: 0;
         }
 
         .log-entry {
@@ -196,14 +218,6 @@
             padding: 30px;
             margin-bottom: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .keyboard-title {
-            color: white;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 18px;
-            font-weight: bold;
         }
 
         .keyboard {
@@ -563,8 +577,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎮 JoyDeck</h1>
-        <p class="subtitle">PCキーボードでNintendo Switchを操作</p>
+        <h1>JoyDeck</h1>
 
         <div id="status" class="status disconnected">
             ❌ マイコン未接続
@@ -572,14 +585,21 @@
 
         <!-- キーボードビジュアル -->
         <div class="keyboard-container">
-            <div class="keyboard-title">⌨️ キーボードビュー</div>
             <div class="keyboard" id="keyboard">
                 <!-- キーボードはJavaScriptで動的に生成 -->
             </div>
         </div>
 
-        <div class="key-mapping" id="keyMapping">
-            <!-- キーマッピングはJavaScriptで動的に生成 -->
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleKeyMapping()">
+                <h3>📋 キーマッピング</h3>
+                <span class="accordion-icon" id="keyMappingIcon">▼</span>
+            </div>
+            <div class="accordion-content" id="keyMappingContent">
+                <div class="key-mapping" id="keyMapping">
+                    <!-- キーマッピングはJavaScriptで動的に生成 -->
+                </div>
+            </div>
         </div>
 
         <div class="button-group">
@@ -595,23 +615,14 @@
             <button id="keyboardModeBtn" class="btn-primary" onclick="toggleKeyboardMode()" style="background: #17a2b8;">
                 <span id="keyboardModeText">キーボードモード</span>
             </button>
+            <button id="instructionsBtn" class="btn-primary" onclick="openInstructions()" style="background: #6c757d;">
+                📋 使い方
+            </button>
+            <button id="logBtn" class="btn-primary" onclick="openLog()" style="background: #6c757d;">
+                📝 ログ
+            </button>
         </div>
 
-        <div class="log" id="log">
-            <div class="log-entry">ログがここに表示されます...</div>
-        </div>
-
-        <div class="instructions">
-            <h3>📋 使い方</h3>
-            <ul>
-                <li>このページを開いた状態でキーボード入力をキャプチャします</li>
-                <li><strong>コントローラーモード</strong>: キーボードのキーを押すと、対応するSwitchコントローラーのボタンが送信されます</li>
-                <li><strong>キーボードモード</strong>: キーボード入力をSwitchにキーボード入力として送信します（Switchで文字入力が必要な場面で使用）</li>
-                <li>「キーボードモード」ボタンで切り替え可能です</li>
-                <li>キーボードモードでは、入力フィールド以外でキーを押すと、Switchにキーボード入力として送信されます</li>
-                <li>マイコンが接続されていることを確認してください</li>
-            </ul>
-        </div>
     </div>
 
     <!-- 設定モーダル -->
@@ -666,6 +677,55 @@
                         キャンセル
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使い方モーダル -->
+    <div id="instructionsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 使い方</h2>
+                <button class="close-modal" onclick="closeInstructions()">閉じる</button>
+            </div>
+
+            <div class="settings-section">
+                <ul style="color: #333; margin-left: 20px; line-height: 1.8;">
+                    <li>このページを開いた状態でキーボード入力をキャプチャします</li>
+                    <li><strong>コントローラーモード</strong>: キーボードのキーを押すと、対応するSwitchコントローラーのボタンが送信されます</li>
+                    <li><strong>キーボードモード</strong>: キーボード入力をSwitchにキーボード入力として送信します（Switchで文字入力が必要な場面で使用）</li>
+                    <li>「キーボードモード」ボタンで切り替え可能です</li>
+                    <li>キーボードモードでは、入力フィールド以外でキーを押すと、Switchにキーボード入力として送信されます</li>
+                    <li>マイコンが接続されていることを確認してください</li>
+                </ul>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-small close-modal" onclick="closeInstructions()">
+                    閉じる
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ログモーダル -->
+    <div id="logModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📝 ログ</h2>
+                <button class="close-modal" onclick="closeLog()">閉じる</button>
+            </div>
+
+            <div class="settings-section">
+                <div class="log" id="log">
+                    <div class="log-entry">ログがここに表示されます...</div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-small close-modal" onclick="closeLog()">
+                    閉じる
+                </button>
             </div>
         </div>
     </div>
@@ -851,7 +911,11 @@
                     // マッピングされているキーかチェック
                     const mapping = editable ? editingMapping : keyMapping;
                     const mapped = mapping[key.code];
-                    if (mapped) {
+                    
+                    // キーボードモードのメインキーボードビューでは、すべてのキーをマッピング色にする
+                    if (containerId === 'keyboard' && keyboardMode === 'keyboard' && !editable) {
+                        keyElement.classList.add('mapped');
+                    } else if (mapped) {
                         keyElement.classList.add('mapped');
                     }
 
@@ -861,23 +925,20 @@
                         keyElement.addEventListener('click', () => selectKeyForMapping(key.code));
                     }
 
-                    // Switchボタンラベルを表示（キーボードビュー用の短縮ラベルを使用）
-                    let switchLabel = '';
-                    if (mapped && switchButtons[mapped.switchButton]) {
-                        // キーボードビュー用の短縮ラベルを使用
-                        switchLabel = switchButtons[mapped.switchButton].keyboardLabel || switchButtons[mapped.switchButton].label;
+                    // キーボードモードの時、または設定モーダル内の場合は通常のキーラベルを表示
+                    // コントローラーモードでメインのキーボードビューの場合のみSwitchボタンラベルを表示
+                    let displayLabel = key.label;
+                    
+                    if (containerId === 'keyboard' && keyboardMode === 'controller' && !editable) {
+                        // コントローラーモードのメインキーボードビューでは、マッピングされている場合はSwitchボタンラベルを表示
+                        if (mapped && switchButtons[mapped.switchButton]) {
+                            displayLabel = switchButtons[mapped.switchButton].keyboardLabel || switchButtons[mapped.switchButton].label;
+                        }
                     }
 
-                    // マッピングされている場合はSwitchボタンラベルのみ表示、そうでない場合はキーラベルを表示
-                    if (switchLabel) {
-                        keyElement.innerHTML = `
-                            <span class="key-label">${switchLabel}</span>
-                        `;
-                    } else {
-                        keyElement.innerHTML = `
-                            <span class="key-label">${key.label}</span>
-                        `;
-                    }
+                    keyElement.innerHTML = `
+                        <span class="key-label">${displayLabel}</span>
+                    `;
 
                     rowElement.appendChild(keyElement);
                 });
@@ -1067,6 +1128,9 @@
             keyboardMode = keyboardMode === 'controller' ? 'keyboard' : 'controller';
             updateKeyboardModeUI();
             
+            // キーボードビューを再描画（モードに応じて表示を変更）
+            renderKeyboard();
+            
             const modeText = keyboardMode === 'controller' ? 'コントローラーモード' : 'キーボードモード';
             addLog(`${modeText}に切り替えました`, 'success');
             
@@ -1182,6 +1246,13 @@
                         sendKeyboardInput(e.key);
                     }
                 }
+                
+                // キーボードビジュアルのハイライト（キーボードモードでも実行）
+                const keyboardKey = document.getElementById(`keyboard-key-${e.code}`);
+                if (keyboardKey) {
+                    keyboardKey.classList.add('pressed');
+                }
+                
                 return; // キーボードモードでは、コントローラーコマンドは送信しない
             }
 
@@ -1228,13 +1299,16 @@
                 keyItem.classList.remove('active');
             }
 
-            // キーボードビジュアルのハイライト解除
+            // キーボードビジュアルのハイライト解除（キーボードモードでも実行）
             const keyboardKey = document.getElementById(`keyboard-key-${e.code}`);
             if (keyboardKey) {
                 keyboardKey.classList.remove('pressed');
             }
 
-            sendKey(e.code, false);
+            // コントローラーモードの場合のみsendKeyを実行
+            if (keyboardMode === 'controller') {
+                sendKey(e.code, false);
+            }
         });
 
         // 設定の保存と読み込み
@@ -1270,6 +1344,24 @@
         function closeSettings() {
             document.getElementById('settingsModal').classList.remove('active');
             selectedKeyCode = null;
+        }
+
+        // 使い方モーダルの開閉
+        function openInstructions() {
+            document.getElementById('instructionsModal').classList.add('active');
+        }
+
+        function closeInstructions() {
+            document.getElementById('instructionsModal').classList.remove('active');
+        }
+
+        // ログモーダルの開閉
+        function openLog() {
+            document.getElementById('logModal').classList.add('active');
+        }
+
+        function closeLog() {
+            document.getElementById('logModal').classList.remove('active');
         }
 
         function selectKeyForMapping(keyCode) {
@@ -1391,9 +1483,31 @@
 
         // モーダル外クリックで閉じる
         window.onclick = function(event) {
-            const modal = document.getElementById('settingsModal');
-            if (event.target === modal) {
+            const settingsModal = document.getElementById('settingsModal');
+            if (event.target === settingsModal) {
                 closeSettings();
+            }
+            const instructionsModal = document.getElementById('instructionsModal');
+            if (event.target === instructionsModal) {
+                closeInstructions();
+            }
+            const logModal = document.getElementById('logModal');
+            if (event.target === logModal) {
+                closeLog();
+            }
+        }
+
+        // キーマッピングアコーディオンの開閉
+        function toggleKeyMapping() {
+            const content = document.getElementById('keyMappingContent');
+            const icon = document.getElementById('keyMappingIcon');
+            
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                icon.classList.remove('open');
+            } else {
+                content.classList.add('open');
+                icon.classList.add('open');
             }
         }
 
@@ -1401,6 +1515,7 @@
         loadKeyboardMode();
         renderKeyboard();
         renderKeyMapping();
+        // アコーディオンは初期状態で閉じた状態にする
         addLog('JoyDeckが起動しました');
     </script>
 </body>
