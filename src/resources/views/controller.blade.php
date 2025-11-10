@@ -27,9 +27,32 @@
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 1200px;
+            max-width: 1400px;
             width: 100%;
             border: 2px solid black;
+            display: flex;
+            gap: 30px;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #dee2e6;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar .status {
+            margin-bottom: 20px;
         }
 
         h1 {
@@ -146,8 +169,8 @@
 
         .button-group {
             display: flex;
-            gap: 10px;
-            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
         }
 
         button {
@@ -158,6 +181,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            width: 100%;
         }
 
         .btn-primary {
@@ -546,6 +570,27 @@
         }
 
         /* レスポンシブ対応 */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+
+            .button-group {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .button-group button {
+                flex: 1;
+                min-width: 150px;
+            }
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -577,50 +622,49 @@
 </head>
 <body>
     <div class="container">
-        <h1>JoyDeck</h1>
-
-        <div id="status" class="status disconnected">
-            ❌ マイコン未接続
-        </div>
-
-        <!-- キーボードビジュアル -->
-        <div class="keyboard-container">
-            <div class="keyboard" id="keyboard">
-                <!-- キーボードはJavaScriptで動的に生成 -->
+        <div class="sidebar">
+            <div id="status" class="status disconnected">
+                ❌ マイコン未接続
+            </div>
+            <div class="button-group">
+                <button id="connectBtn" class="btn-primary" onclick="connectMicrocontroller()">
+                    マイコン接続
+                </button>
+                <button id="settingsBtn" class="btn-primary" onclick="openSettings()" style="background: #28a745;">
+                    キーマッピング設定
+                </button>
+                <button id="keyboardModeBtn" class="btn-primary" onclick="toggleKeyboardMode()" style="background: #17a2b8;">
+                    <span id="keyboardModeText">キーボードモード</span>
+                </button>
+                <button id="instructionsBtn" class="btn-primary" onclick="openInstructions()" style="background: #6c757d;">
+                    📋 使い方
+                </button>
+                <button id="logBtn" class="btn-primary" onclick="openLog()" style="background: #6c757d;">
+                    📝 ログ
+                </button>
             </div>
         </div>
 
-        <div class="accordion">
-            <div class="accordion-header" onclick="toggleKeyMapping()">
-                <h3>📋 キーマッピング</h3>
-                <span class="accordion-icon" id="keyMappingIcon">▼</span>
-            </div>
-            <div class="accordion-content" id="keyMappingContent">
-                <div class="key-mapping" id="keyMapping">
-                    <!-- キーマッピングはJavaScriptで動的に生成 -->
+        <div class="main-content">
+
+            <!-- キーボードビジュアル -->
+            <div class="keyboard-container">
+                <div class="keyboard" id="keyboard">
+                    <!-- キーボードはJavaScriptで動的に生成 -->
                 </div>
             </div>
-        </div>
 
-        <div class="button-group">
-            <button id="connectBtn" class="btn-primary" onclick="connectMicrocontroller()">
-                マイコン接続
-            </button>
-            <button id="disconnectBtn" class="btn-danger" onclick="disconnectMicrocontroller()" disabled>
-                切断
-            </button>
-            <button id="settingsBtn" class="btn-primary" onclick="openSettings()" style="background: #28a745;">
-                キーマッピング設定
-            </button>
-            <button id="keyboardModeBtn" class="btn-primary" onclick="toggleKeyboardMode()" style="background: #17a2b8;">
-                <span id="keyboardModeText">キーボードモード</span>
-            </button>
-            <button id="instructionsBtn" class="btn-primary" onclick="openInstructions()" style="background: #6c757d;">
-                📋 使い方
-            </button>
-            <button id="logBtn" class="btn-primary" onclick="openLog()" style="background: #6c757d;">
-                📝 ログ
-            </button>
+            <div class="accordion">
+                <div class="accordion-header" onclick="toggleKeyMapping()">
+                    <h3>📋 キーマッピング</h3>
+                    <span class="accordion-icon" id="keyMappingIcon">▼</span>
+                </div>
+                <div class="accordion-content" id="keyMappingContent">
+                    <div class="key-mapping" id="keyMapping">
+                        <!-- キーマッピングはJavaScriptで動的に生成 -->
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -1046,7 +1090,6 @@
                     isConnected = true;
                     updateStatus(true);
                     document.getElementById('connectBtn').disabled = true;
-                    document.getElementById('disconnectBtn').disabled = false;
                     addLog('マイコンに接続しました', 'success');
                 } else {
                     addLog('接続に失敗しました: ' + data.message, 'error');
@@ -1072,7 +1115,6 @@
                 isConnected = false;
                 updateStatus(false);
                 document.getElementById('connectBtn').disabled = false;
-                document.getElementById('disconnectBtn').disabled = true;
                 addLog('マイコンから切断しました', 'success');
             } catch (error) {
                 addLog('切断エラー: ' + error.message, 'error');
