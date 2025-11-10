@@ -1,27 +1,14 @@
 /*
  * JoyDeck - Arduino側の実装例
  * 
- * このスケッチは、PCからのコマンドを受信して
+ * このスケッチは、PCからのシリアル通信でコマンドを受信して
  * Nintendo Switchに送信するための基本的な実装例です。
  * 
  * 注意: 実際のSwitch操作には、専用のライブラリ（例: Switch-Fightstick）
  * が必要です。この例は基本的な構造を示しています。
+ * 
+ * この実装は有線接続（シリアル通信）のみをサポートします。
  */
-
-// WiFi接続用（ESP32/ESP8266の場合）
-#include <WiFi.h>
-#include <WiFiClient.h>
-
-// シリアル接続用（Arduino Uno等の場合）
-// #define USE_SERIAL
-
-// WiFi設定
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-const int serverPort = 8888;
-
-WiFiServer server(serverPort);
-WiFiClient client;
 
 // Switchコントローラーのボタン定義
 enum SwitchButton {
@@ -38,50 +25,18 @@ bool buttonStates[22] = {false}; // ボタン数が増えたので配列サイ�
 
 void setup() {
   Serial.begin(115200);
-  
-  #ifdef USE_SERIAL
-    // シリアル接続のみ使用
-    Serial.println("JoyDeck Serial Mode");
-  #else
-    // WiFi接続
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-    }
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
-    
-    server.begin();
-    Serial.println("Server started");
-  #endif
+  Serial.println("JoyDeck Serial Mode - Ready for commands");
 }
 
 void loop() {
-  #ifdef USE_SERIAL
-    // シリアル接続からコマンドを受信
-    if (Serial.available()) {
-      String command = Serial.readStringUntil('\n');
-      command.trim();
+  // シリアル接続からコマンドを受信
+  if (Serial.available()) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+    if (command.length() > 0) {
       processCommand(command);
     }
-  #else
-    // WiFi接続からコマンドを受信
-    if (!client || !client.connected()) {
-      client = server.available();
-      if (client) {
-        Serial.println("Client connected");
-      }
-    } else {
-      if (client.available()) {
-        String command = client.readStringUntil('\n');
-        command.trim();
-        processCommand(command);
-      }
-    }
-  #endif
+  }
 }
 
 void processCommand(String command) {

@@ -11,14 +11,13 @@ class MicrocontrollerService
     protected $isConnected = false;
     protected $connection = null;
 
-    // 接続タイプ: 'serial', 'tcp', 'usb'
+    // 接続タイプ: 'serial', 'usb'
     const CONNECTION_SERIAL = 'serial';
-    const CONNECTION_TCP = 'tcp';
     const CONNECTION_USB = 'usb';
 
     public function __construct()
     {
-        $this->connectionType = Config::get('microcontroller.connection_type', self::CONNECTION_TCP);
+        $this->connectionType = Config::get('microcontroller.connection_type', self::CONNECTION_SERIAL);
     }
 
     /**
@@ -30,8 +29,6 @@ class MicrocontrollerService
             switch ($this->connectionType) {
                 case self::CONNECTION_SERIAL:
                     return $this->connectSerial();
-                case self::CONNECTION_TCP:
-                    return $this->connectTcp();
                 case self::CONNECTION_USB:
                     return $this->connectUsb();
                 default:
@@ -49,43 +46,113 @@ class MicrocontrollerService
      */
     protected function connectSerial(): bool
     {
-        // シリアルポート接続の実装
-        // Windows: COMポート、Linux/Mac: /dev/ttyUSB0など
         $port = Config::get('microcontroller.serial_port', 'COM3');
         $baudRate = Config::get('microcontroller.baud_rate', 115200);
 
-        // 実際の実装では、php-serialなどのライブラリを使用
-        // ここでは接続成功をシミュレート
-        Log::info("Serial connection attempted to {$port} at {$baudRate} baud");
-        
-        // TODO: 実際のシリアル接続実装
-        $this->isConnected = true;
-        return true;
+        try {
+            // Windowsの場合
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Windowsでは "\\\\.\\COM3" 形式で開く必要がある
+                $portName = $port;
+                if (!preg_match('/^\\\\\\\\.\\\\/', $portName)) {
+                    $portName = '\\\\.\\' . $port;
+                }
+                
+                // COMポートを開く
+                $handle = @fopen($portName, 'r+');
+                if ($handle === false) {
+                    Log::error("Failed to open serial port: {$port}");
+                    return false;
+                }
+                
+                // シリアルポートの設定（Windowsではmodeコマンドを使用）
+                $this->configureSerialPortWindows($port, $baudRate);
+                
+                $this->connection = $handle;
+                $this->isConnected = true;
+                Log::info("Serial connection established to {$port} at {$baudRate} baud");
+                return true;
+            } else {
+                // Linux/Macの場合
+                // /dev/ttyACM0, /dev/ttyUSB0, /dev/ttyUSB1 などを試す
+                $possiblePorts = [$port];
+                if ($port === 'COM3' || $port === 'COM1') {
+                    // デフォルト値の場合は、一般的なLinux/Macポートを試す
+                    $possiblePorts = ['/dev/ttyACM0', '/dev/ttyUSB0', '/dev/ttyUSB1'];
+                    
+                    // Macの場合、/dev/tty.usbmodem* を検索
+                    if (strtoupper(substr(PHP_OS, 0, 6)) === 'DARWIN') {
+                        $usbModemPorts = glob('/dev/tty.usbmodem*');
+                        if ($usbModemPorts) {
+                            $possiblePorts = array_merge($usbModemPorts, $possiblePorts);
+                        }
+                    }
+                }
+                
+                foreach ($possiblePorts as $tryPort) {
+                    if (file_exists($tryPort) && is_readable($tryPort)) {
+                        // sttyコマンドでシリアルポートを設定
+                        $this->configureSerialPortUnix($tryPort, $baudRate);
+                        
+                        // シリアルポートを開く
+                        $handle = @fopen($tryPort, 'r+');
+                        if ($handle !== false) {
+                            $this->connection = $handle;
+                            $this->isConnected = true;
+                            Log::info("Serial connection established to {$tryPort} at {$baudRate} baud");
+                            return true;
+                        }
+                    }
+                }
+                
+                Log::error("Failed to open serial port: {$port} (not found or not accessible)");
+                return false;
+            }
+        } catch (\Exception $e) {
+            Log::error("Serial connection error: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
-     * TCP接続
+     * Windowsでシリアルポートを設定
      */
-    protected function connectTcp(): bool
+    protected function configureSerialPortWindows(string $port, int $baudRate): void
     {
-        $host = Config::get('microcontroller.tcp_host', '127.0.0.1');
-        $port = Config::get('microcontroller.tcp_port', 8888);
-
-        try {
-            $socket = @fsockopen($host, $port, $errno, $errstr, 5);
-            
-            if ($socket === false) {
-                Log::error("TCP connection failed: {$errstr} ({$errno})");
-                return false;
+        // Windowsのmodeコマンドでシリアルポートを設定
+        // mode COM3: BAUD=115200 PARITY=N DATA=8 STOP=1
+        $portNumber = preg_replace('/[^0-9]/', '', $port);
+        if ($portNumber) {
+            $command = sprintf(
+                'mode COM%s: BAUD=%d PARITY=N DATA=8 STOP=1',
+                $portNumber,
+                $baudRate
+            );
+            @exec($command . ' 2>&1', $output, $returnCode);
+            if ($returnCode === 0) {
+                Log::info("Serial port configured: {$command}");
+            } else {
+                Log::warning("Failed to configure serial port with mode command");
             }
+        }
+    }
 
-            $this->connection = $socket;
-            $this->isConnected = true;
-            Log::info("TCP connection established to {$host}:{$port}");
-            return true;
-        } catch (\Exception $e) {
-            Log::error("TCP connection error: " . $e->getMessage());
-            return false;
+    /**
+     * Unix/Linux/Macでシリアルポートを設定
+     */
+    protected function configureSerialPortUnix(string $port, int $baudRate): void
+    {
+        // sttyコマンドでシリアルポートを設定
+        $command = sprintf(
+            'stty -F %s %d cs8 -cstopb -parenb raw -echo 2>&1',
+            escapeshellarg($port),
+            $baudRate
+        );
+        @exec($command, $output, $returnCode);
+        if ($returnCode === 0) {
+            Log::info("Serial port configured: {$port} at {$baudRate} baud");
+        } else {
+            Log::warning("Failed to configure serial port with stty (may require permissions)");
         }
     }
 
@@ -129,22 +196,23 @@ class MicrocontrollerService
 
         try {
             switch ($this->connectionType) {
-                case self::CONNECTION_TCP:
+                case self::CONNECTION_SERIAL:
+                    // シリアルポートへの書き込み
                     if ($this->connection && is_resource($this->connection)) {
                         $result = fwrite($this->connection, $command . "\n");
                         if ($result === false) {
-                            Log::error("Failed to write to TCP socket");
+                            Log::error("Failed to write to serial port");
                             $this->disconnect();
                             return false;
                         }
+                        // データが確実に送信されるようにフラッシュ
+                        fflush($this->connection);
+                        Log::debug("Sent command via serial: {$command}");
                         return true;
+                    } else {
+                        Log::error("Serial port connection is not available");
+                        return false;
                     }
-                    break;
-                case self::CONNECTION_SERIAL:
-                    // シリアルポートへの書き込み
-                    // TODO: 実装
-                    Log::info("Sending command via serial: {$command}");
-                    return true;
                 case self::CONNECTION_USB:
                     // USBへの書き込み
                     // TODO: 実装

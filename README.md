@@ -49,9 +49,9 @@ php artisan key:generate
 
 5. `.env`ファイルにマイコン接続設定を追加
 ```env
-MICROCONTROLLER_CONNECTION_TYPE=tcp
-MICROCONTROLLER_TCP_HOST=127.0.0.1
-MICROCONTROLLER_TCP_PORT=8888
+MICROCONTROLLER_CONNECTION_TYPE=serial
+MICROCONTROLLER_SERIAL_PORT=COM3
+MICROCONTROLLER_BAUD_RATE=115200
 ```
 
 6. アセットのビルド
@@ -61,7 +61,7 @@ npm run dev
 
 ## 🎯 使い方
 
-1. マイコンをPCに接続（USBまたはネットワーク経由）
+1. マイコンをPCにUSB接続（シリアル通信経由）
 2. ブラウザで `http://localhost/controller` にアクセス
 3. 「マイコン接続」ボタンをクリック
 4. キーボードで操作開始
@@ -154,25 +154,23 @@ char mapButtonToKey(String button) {
 
 ## 📡 接続タイプ
 
-### TCP接続（推奨）
+### シリアル接続（有線接続のみ）
 
-マイコンがWi-Fi経由で接続可能な場合、TCP接続を使用できます。
-
-```env
-MICROCONTROLLER_CONNECTION_TYPE=tcp
-MICROCONTROLLER_TCP_HOST=192.168.1.100
-MICROCONTROLLER_TCP_PORT=8888
-```
-
-### シリアル接続
-
-USBシリアル経由で接続する場合。
+この実装は有線接続（USBシリアル通信）のみをサポートします。
 
 ```env
 MICROCONTROLLER_CONNECTION_TYPE=serial
 MICROCONTROLLER_SERIAL_PORT=COM3
 MICROCONTROLLER_BAUD_RATE=115200
 ```
+
+**Windowsの場合:**
+- デバイスマネージャーでCOMポート番号を確認（例: COM3）
+- `.env`で`MICROCONTROLLER_SERIAL_PORT=COM3`を設定
+
+**Linux/Macの場合:**
+- 通常は`/dev/ttyACM0`または`/dev/ttyUSB0`として認識されます
+- 必要に応じて`.env`でポートを指定
 
 ## 🛠️ 開発
 

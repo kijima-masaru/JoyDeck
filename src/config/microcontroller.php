@@ -7,11 +7,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | マイコンとの接続方法を設定します。
-    | 接続タイプ: 'serial', 'tcp', 'usb'
+    | 接続タイプ: 'serial', 'usb'
+    | 注意: この実装は有線接続のみをサポートします。
     |
     */
 
-    'connection_type' => env('MICROCONTROLLER_CONNECTION_TYPE', 'tcp'),
+    'connection_type' => env('MICROCONTROLLER_CONNECTION_TYPE', 'serial'),
 
     /*
     |--------------------------------------------------------------------------
@@ -20,14 +21,6 @@ return [
     */
     'serial_port' => env('MICROCONTROLLER_SERIAL_PORT', 'COM3'),
     'baud_rate' => env('MICROCONTROLLER_BAUD_RATE', 115200),
-
-    /*
-    |--------------------------------------------------------------------------
-    | TCP接続設定
-    |--------------------------------------------------------------------------
-    */
-    'tcp_host' => env('MICROCONTROLLER_TCP_HOST', '127.0.0.1'),
-    'tcp_port' => env('MICROCONTROLLER_TCP_PORT', 8888),
 
     /*
     |--------------------------------------------------------------------------
