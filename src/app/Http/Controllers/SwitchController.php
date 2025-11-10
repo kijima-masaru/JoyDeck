@@ -122,5 +122,75 @@ class SwitchController extends Controller
             'connected' => $isConnected
         ]);
     }
+
+    /**
+     * キーボード入力を送信（通常入力モード用）
+     */
+    public function sendKeyboardInput(Request $request): JsonResponse
+    {
+        $request->validate([
+            'char' => 'nullable|string|max:1',
+            'key' => 'nullable|string',
+            'text' => 'nullable|string|max:1000'
+        ]);
+
+        try {
+            // 文字列が指定されている場合は、文字列全体を送信
+            if ($request->has('text') && !empty($request->input('text'))) {
+                $text = $request->input('text');
+                $commands = $this->switchCommandService->createKeyboardTextCommands($text);
+                
+                foreach ($commands as $command) {
+                    $this->microcontrollerService->sendCommand($command);
+                    // 少し遅延を入れて、入力が正しく処理されるようにする
+                    usleep(10000); // 10ms
+                }
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => "文字列を送信しました: " . mb_substr($text, 0, 20) . (mb_strlen($text) > 20 ? '...' : '')
+                ]);
+            }
+            
+            // 1文字が指定されている場合
+            if ($request->has('char') && !empty($request->input('char'))) {
+                $char = $request->input('char');
+                $command = $this->switchCommandService->createKeyboardCharCommand($char);
+                $sent = $this->microcontrollerService->sendCommand($command);
+                
+                if ($sent) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => "文字を送信しました: {$char}"
+                    ]);
+                }
+            }
+            
+            // 特殊キーが指定されている場合
+            if ($request->has('key') && !empty($request->input('key'))) {
+                $key = $request->input('key');
+                $command = $this->switchCommandService->createKeyboardKeyCommand($key);
+                $sent = $this->microcontrollerService->sendCommand($command);
+                
+                if ($sent) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => "キーを送信しました: {$key}"
+                    ]);
+                }
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'char、key、またはtextのいずれかを指定してください'
+            ], 400);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
 

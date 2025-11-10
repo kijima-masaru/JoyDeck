@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // SwitchコントローラーAPI
 Route::prefix('switch')->group(function () {
     Route::post('/send', [App\Http\Controllers\SwitchController::class, 'sendCommand']);
+    Route::post('/keyboard', [App\Http\Controllers\SwitchController::class, 'sendKeyboardInput']);
 });
 
 // マイコン接続API

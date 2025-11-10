@@ -227,7 +227,9 @@
             border: 2px solid #1a252f;
             border-radius: 6px;
             padding: 12px 16px;
+            width: 50px;
             min-width: 50px;
+            max-width: 50px;
             height: 50px;
             display: flex;
             align-items: center;
@@ -276,14 +278,14 @@
         }
 
         /* 特殊キーのサイズ調整 */
-        .key.tab { min-width: 70px; }
-        .key.caps { min-width: 85px; }
-        .key.shift { min-width: 100px; }
-        .key.ctrl { min-width: 70px; }
-        .key.alt { min-width: 70px; }
-        .key.space { min-width: 300px; }
-        .key.enter { min-width: 100px; }
-        .key.backspace { min-width: 100px; }
+        .key.tab { width: 70px; min-width: 70px; max-width: 70px; }
+        .key.caps { width: 85px; min-width: 85px; max-width: 85px; }
+        .key.shift { width: 100px; min-width: 100px; max-width: 100px; }
+        .key.ctrl { width: 70px; min-width: 70px; max-width: 70px; }
+        .key.alt { width: 70px; min-width: 70px; max-width: 70px; }
+        .key.space { width: 300px; min-width: 300px; max-width: 300px; }
+        .key.enter { width: 100px; min-width: 100px; max-width: 100px; }
+        .key.backspace { width: 100px; min-width: 100px; max-width: 100px; }
 
         .keyboard-section {
             margin-bottom: 20px;
@@ -469,6 +471,42 @@
             background: #e0a800;
         }
 
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .btn-info.active {
+            background: #28a745;
+        }
+
+        .btn-info.active:hover {
+            background: #218838;
+        }
+
+        .mode-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+
+        .mode-indicator.controller {
+            background: #667eea;
+            color: white;
+        }
+
+        .mode-indicator.keyboard {
+            background: #28a745;
+            color: white;
+        }
+
         .keyboard-key-editable {
             cursor: pointer;
             transition: all 0.2s;
@@ -500,20 +538,22 @@
             }
 
             .key {
+                width: 35px;
                 min-width: 35px;
+                max-width: 35px;
                 height: 40px;
                 padding: 8px 10px;
                 font-size: 12px;
             }
 
-            .key.space { min-width: 200px; }
-            .key.tab { min-width: 50px; }
-            .key.caps { min-width: 60px; }
-            .key.shift { min-width: 70px; }
-            .key.ctrl { min-width: 50px; }
-            .key.alt { min-width: 50px; }
-            .key.enter { min-width: 70px; }
-            .key.backspace { min-width: 70px; }
+            .key.space { width: 200px; min-width: 200px; max-width: 200px; }
+            .key.tab { width: 50px; min-width: 50px; max-width: 50px; }
+            .key.caps { width: 60px; min-width: 60px; max-width: 60px; }
+            .key.shift { width: 70px; min-width: 70px; max-width: 70px; }
+            .key.ctrl { width: 50px; min-width: 50px; max-width: 50px; }
+            .key.alt { width: 50px; min-width: 50px; max-width: 50px; }
+            .key.enter { width: 70px; min-width: 70px; max-width: 70px; }
+            .key.backspace { width: 70px; min-width: 70px; max-width: 70px; }
 
             .key-switch-label {
                 font-size: 8px;
@@ -528,15 +568,6 @@
 
         <div id="status" class="status disconnected">
             ❌ マイコン未接続
-        </div>
-
-        <div class="instructions">
-            <h3>📋 使い方</h3>
-            <ul>
-                <li>このページを開いた状態でキーボード入力をキャプチャします</li>
-                <li>キーボードのキーを押すと、対応するSwitchコントローラーのボタンが送信されます</li>
-                <li>マイコンが接続されていることを確認してください</li>
-            </ul>
         </div>
 
         <!-- キーボードビジュアル -->
@@ -561,10 +592,25 @@
             <button id="settingsBtn" class="btn-primary" onclick="openSettings()" style="background: #28a745;">
                 キーマッピング設定
             </button>
+            <button id="keyboardModeBtn" class="btn-primary" onclick="toggleKeyboardMode()" style="background: #17a2b8;">
+                <span id="keyboardModeText">キーボードモード</span>
+            </button>
         </div>
 
         <div class="log" id="log">
             <div class="log-entry">ログがここに表示されます...</div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 使い方</h3>
+            <ul>
+                <li>このページを開いた状態でキーボード入力をキャプチャします</li>
+                <li><strong>コントローラーモード</strong>: キーボードのキーを押すと、対応するSwitchコントローラーのボタンが送信されます</li>
+                <li><strong>キーボードモード</strong>: キーボード入力をSwitchにキーボード入力として送信します（Switchで文字入力が必要な場面で使用）</li>
+                <li>「キーボードモード」ボタンで切り替え可能です</li>
+                <li>キーボードモードでは、入力フィールド以外でキーを押すと、Switchにキーボード入力として送信されます</li>
+                <li>マイコンが接続されていることを確認してください</li>
+            </ul>
         </div>
     </div>
 
@@ -627,24 +673,26 @@
     <script>
         // Switchボタンの定義
         const switchButtons = {
-            'UP': { label: '上', icon: '⬆️' },
-            'DOWN': { label: '下', icon: '⬇️' },
-            'LEFT': { label: '左', icon: '⬅️' },
-            'RIGHT': { label: '右', icon: '➡️' },
-            'A': { label: 'Aボタン', icon: '🔴' },
-            'B': { label: 'Bボタン', icon: '🔵' },
-            'X': { label: 'Xボタン', icon: '🟡' },
-            'Y': { label: 'Yボタン', icon: '🟢' },
-            'L': { label: 'Lボタン', icon: 'L' },
-            'R': { label: 'Rボタン', icon: 'R' },
-            'ZL': { label: 'ZLボタン', icon: 'ZL' },
-            'ZR': { label: 'ZRボタン', icon: 'ZR' },
-            'PLUS': { label: 'プラス', icon: '+' },
-            'MINUS': { label: 'マイナス', icon: '-' },
-            'HOME': { label: 'ホーム', icon: '🏠' },
-            'CAPTURE': { label: 'キャプチャ', icon: '📷' },
-            'L_STICK_CLICK': { label: '左スティック押し込み', icon: '🕹️' },
-            'R_STICK_CLICK': { label: '右スティック押し込み', icon: '🕹️' },
+            'UP': { label: '上', icon: '⬆️', keyboardLabel: '上' },
+            'DOWN': { label: '下', icon: '⬇️', keyboardLabel: '下' },
+            'LEFT': { label: '左', icon: '⬅️', keyboardLabel: '左' },
+            'RIGHT': { label: '右', icon: '➡️', keyboardLabel: '右' },
+            'A': { label: 'Aボタン', icon: '🔴', keyboardLabel: 'A' },
+            'B': { label: 'Bボタン', icon: '🔵', keyboardLabel: 'B' },
+            'X': { label: 'Xボタン', icon: '🟡', keyboardLabel: 'X' },
+            'Y': { label: 'Yボタン', icon: '🟢', keyboardLabel: 'Y' },
+            'L1': { label: 'L1(L)ボタン', icon: 'L1', keyboardLabel: 'L1(L)' },
+            'L2': { label: 'L2(ZL)ボタン', icon: 'L2', keyboardLabel: 'L2(ZL)' },
+            'L3': { label: 'L3ボタン', icon: 'L3', keyboardLabel: 'L3' },
+            'R1': { label: 'R1(R)ボタン', icon: 'R1', keyboardLabel: 'R1(R)' },
+            'R2': { label: 'R2(ZR)ボタン', icon: 'R2', keyboardLabel: 'R2(ZR)' },
+            'R3': { label: 'R3ボタン', icon: 'R3', keyboardLabel: 'R3' },
+            'PLUS': { label: 'プラス', icon: '+', keyboardLabel: '+' },
+            'MINUS': { label: 'マイナス', icon: '-', keyboardLabel: '-' },
+            'HOME': { label: 'ホーム', icon: '🏠', keyboardLabel: '⌂' },
+            'CAPTURE': { label: 'キャプチャ', icon: '📷', keyboardLabel: '●' },
+            'L_STICK_CLICK': { label: '左スティック押し込み', icon: '🕹️', keyboardLabel: 'LS' },
+            'R_STICK_CLICK': { label: '右スティック押し込み', icon: '🕹️', keyboardLabel: 'RS' },
         };
 
         // デフォルトのキーマッピング
@@ -657,10 +705,12 @@
             'KeyK': { switchButton: 'B', label: 'Bボタン' },
             'KeyI': { switchButton: 'X', label: 'Xボタン' },
             'KeyL': { switchButton: 'Y', label: 'Yボタン' },
-            'KeyQ': { switchButton: 'L', label: 'Lボタン' },
-            'KeyE': { switchButton: 'R', label: 'Rボタン' },
-            'KeyZ': { switchButton: 'ZL', label: 'ZLボタン' },
-            'KeyC': { switchButton: 'ZR', label: 'ZRボタン' },
+            'KeyQ': { switchButton: 'L1', label: 'L1(L)ボタン' },
+            'Digit1': { switchButton: 'L2', label: 'L2(ZL)ボタン' },
+            'Digit2': { switchButton: 'L3', label: 'L3ボタン' },
+            'KeyE': { switchButton: 'R1', label: 'R1(R)ボタン' },
+            'Digit3': { switchButton: 'R2', label: 'R2(ZR)ボタン' },
+            'Digit4': { switchButton: 'R3', label: 'R3ボタン' },
             'KeyM': { switchButton: 'MINUS', label: 'マイナス' },
             'KeyN': { switchButton: 'PLUS', label: 'プラス' },
             'KeyH': { switchButton: 'HOME', label: 'ホーム' },
@@ -671,6 +721,7 @@
 
         let isConnected = false;
         let activeKeys = new Set();
+        let keyboardMode = 'controller'; // 'controller' または 'keyboard'
 
         // 設定の読み込み関数（先に定義）
         function loadKeyMapping() {
@@ -727,9 +778,9 @@
             ],
             [
                 { code: 'Tab', label: 'Tab', class: 'tab' },
-                { code: 'KeyQ', label: 'Q', class: '', switchLabel: 'L' },
+                { code: 'KeyQ', label: 'Q', class: '', switchLabel: 'L1' },
                 { code: 'KeyW', label: 'W', class: '', switchLabel: '上' },
-                { code: 'KeyE', label: 'E', class: '', switchLabel: 'R' },
+                { code: 'KeyE', label: 'E', class: '', switchLabel: 'R1' },
                 { code: 'KeyR', label: 'R', class: '' },
                 { code: 'KeyT', label: 'T', class: '' },
                 { code: 'KeyY', label: 'Y', class: '' },
@@ -810,16 +861,23 @@
                         keyElement.addEventListener('click', () => selectKeyForMapping(key.code));
                     }
 
-                    // Switchボタンラベルを表示
+                    // Switchボタンラベルを表示（キーボードビュー用の短縮ラベルを使用）
                     let switchLabel = '';
                     if (mapped && switchButtons[mapped.switchButton]) {
-                        switchLabel = switchButtons[mapped.switchButton].label;
+                        // キーボードビュー用の短縮ラベルを使用
+                        switchLabel = switchButtons[mapped.switchButton].keyboardLabel || switchButtons[mapped.switchButton].label;
                     }
 
-                    keyElement.innerHTML = `
-                        <span class="key-label">${key.label}</span>
-                        ${switchLabel ? `<span class="key-switch-label">${switchLabel}</span>` : ''}
-                    `;
+                    // マッピングされている場合はSwitchボタンラベルのみ表示、そうでない場合はキーラベルを表示
+                    if (switchLabel) {
+                        keyElement.innerHTML = `
+                            <span class="key-label">${switchLabel}</span>
+                        `;
+                    } else {
+                        keyElement.innerHTML = `
+                            <span class="key-label">${key.label}</span>
+                        `;
+                    }
 
                     rowElement.appendChild(keyElement);
                 });
@@ -833,15 +891,66 @@
             const container = document.getElementById('keyMapping');
             container.innerHTML = '';
 
+            // ボタンの表示順序を定義（L/Rペアで表示）
+            const buttonOrder = [
+                ['UP', 'DOWN'],
+                ['LEFT', 'RIGHT'],
+                ['A', 'B'],
+                ['X', 'Y'],
+                ['L1', 'R1'],
+                ['L2', 'R2'],
+                ['L3', 'R3'],
+                ['PLUS', 'MINUS'],
+                ['HOME', 'CAPTURE'],
+                ['L_STICK_CLICK', 'R_STICK_CLICK'],
+            ];
+
+            // 順序に従って表示
+            const displayedButtons = new Set();
+            buttonOrder.forEach(([leftBtn, rightBtn]) => {
+                // 左側のボタン
+                const leftMapping = Object.entries(keyMapping).find(([key, value]) => value.switchButton === leftBtn);
+                if (leftMapping) {
+                    const [key, value] = leftMapping;
+                    displayedButtons.add(key);
+                    const keyItem = document.createElement('div');
+                    keyItem.className = 'key-item';
+                    keyItem.id = `key-${key}`;
+                    keyItem.innerHTML = `
+                        <span class="key-label">${value.label}</span>
+                        <span class="key-value">${key}</span>
+                    `;
+                    container.appendChild(keyItem);
+                }
+
+                // 右側のボタン
+                const rightMapping = Object.entries(keyMapping).find(([key, value]) => value.switchButton === rightBtn);
+                if (rightMapping) {
+                    const [key, value] = rightMapping;
+                    displayedButtons.add(key);
+                    const keyItem = document.createElement('div');
+                    keyItem.className = 'key-item';
+                    keyItem.id = `key-${key}`;
+                    keyItem.innerHTML = `
+                        <span class="key-label">${value.label}</span>
+                        <span class="key-value">${key}</span>
+                    `;
+                    container.appendChild(keyItem);
+                }
+            });
+
+            // 順序に含まれていないボタンも表示
             Object.entries(keyMapping).forEach(([key, value]) => {
-                const keyItem = document.createElement('div');
-                keyItem.className = 'key-item';
-                keyItem.id = `key-${key}`;
-                keyItem.innerHTML = `
-                    <span class="key-label">${value.label}</span>
-                    <span class="key-value">${key}</span>
-                `;
-                container.appendChild(keyItem);
+                if (!displayedButtons.has(key)) {
+                    const keyItem = document.createElement('div');
+                    keyItem.className = 'key-item';
+                    keyItem.id = `key-${key}`;
+                    keyItem.innerHTML = `
+                        <span class="key-label">${value.label}</span>
+                        <span class="key-value">${key}</span>
+                    `;
+                    container.appendChild(keyItem);
+                }
             });
         }
 
@@ -923,6 +1032,9 @@
 
         // キー送信
         async function sendKey(keyCode, pressed) {
+            // キーボードモードの場合は、Switchコマンドを送信しない
+            if (keyboardMode === 'keyboard') return;
+            
             if (!isConnected) return;
 
             const mapping = keyMapping[keyCode];
@@ -950,10 +1062,147 @@
             }
         }
 
+        // キーボードモードの切り替え
+        function toggleKeyboardMode() {
+            keyboardMode = keyboardMode === 'controller' ? 'keyboard' : 'controller';
+            updateKeyboardModeUI();
+            
+            const modeText = keyboardMode === 'controller' ? 'コントローラーモード' : 'キーボードモード';
+            addLog(`${modeText}に切り替えました`, 'success');
+            
+            // 設定を保存
+            localStorage.setItem('joydeck_keyboard_mode', keyboardMode);
+        }
+
+        function updateKeyboardModeUI() {
+            const btn = document.getElementById('keyboardModeBtn');
+            const text = document.getElementById('keyboardModeText');
+            
+            if (keyboardMode === 'controller') {
+                btn.style.background = '#667eea';
+                text.textContent = 'コントローラーモード';
+                btn.classList.add('active');
+            } else {
+                btn.style.background = '#28a745';
+                text.textContent = 'キーボードモード';
+                btn.classList.remove('active');
+            }
+        }
+
+        // キーボードモードの読み込み
+        function loadKeyboardMode() {
+            const saved = localStorage.getItem('joydeck_keyboard_mode');
+            if (saved === 'keyboard' || saved === 'controller') {
+                keyboardMode = saved;
+            }
+            updateKeyboardModeUI();
+        }
+
+        // キーボード入力送信（キーボードモード用）
+        async function sendKeyboardInput(char, key = null) {
+            if (!isConnected) return;
+
+            try {
+                const body = {};
+                if (char) {
+                    body.char = char;
+                }
+                if (key) {
+                    body.key = key;
+                }
+
+                const response = await fetch('/api/switch/keyboard', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    addLog(`キーボード入力エラー: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                addLog(`キーボード入力エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // キーボードコードから特殊キー名に変換
+        function getSpecialKeyName(keyCode) {
+            const keyMap = {
+                'Enter': 'ENTER',
+                'Backspace': 'BACKSPACE',
+                'Tab': 'TAB',
+                'Escape': 'ESC',
+                'Space': 'SPACE',
+                'Delete': 'DELETE',
+                'Home': 'HOME',
+                'End': 'END',
+                'PageUp': 'PAGEUP',
+                'PageDown': 'PAGEDOWN',
+                'ArrowUp': 'ARROW_UP',
+                'ArrowDown': 'ARROW_DOWN',
+                'ArrowLeft': 'ARROW_LEFT',
+                'ArrowRight': 'ARROW_RIGHT',
+            };
+            return keyMap[keyCode] || null;
+        }
+
         // キーボードイベント
         document.addEventListener('keydown', (e) => {
+            // 設定モーダルが開いている場合は通常のキーボード入力を許可
+            const modal = document.getElementById('settingsModal');
+            if (modal && modal.classList.contains('active')) {
+                return;
+            }
+
             if (activeKeys.has(e.code)) return;
             activeKeys.add(e.code);
+
+            // キーボードモードの場合
+            if (keyboardMode === 'keyboard') {
+                // テキスト入力フィールドにフォーカスがある場合は通常入力として扱う
+                const activeElement = document.activeElement;
+                const isInputField = activeElement && (
+                    activeElement.tagName === 'INPUT' ||
+                    activeElement.tagName === 'TEXTAREA' ||
+                    activeElement.isContentEditable
+                );
+                
+                // 入力フィールド以外の場合のみ、Switchにキーボード入力を送信
+                if (!isInputField && isConnected) {
+                    // 特殊キーの場合
+                    const specialKey = getSpecialKeyName(e.code);
+                    if (specialKey) {
+                        sendKeyboardInput(null, specialKey);
+                    } else if (e.key && e.key.length === 1) {
+                        // 通常の文字の場合
+                        sendKeyboardInput(e.key);
+                    }
+                }
+                return; // キーボードモードでは、コントローラーコマンドは送信しない
+            }
+
+            // コントローラーモードの場合
+            // マッピングされているキーの場合のみ処理
+            const mapping = keyMapping[e.code];
+            if (mapping) {
+                // テキスト入力フィールドにフォーカスがある場合は通常入力として扱う
+                const activeElement = document.activeElement;
+                const isInputField = activeElement && (
+                    activeElement.tagName === 'INPUT' ||
+                    activeElement.tagName === 'TEXTAREA' ||
+                    activeElement.isContentEditable
+                );
+                
+                if (!isInputField) {
+                    // 通常のキーボード入力を抑制（ただし、完全にはブロックしない）
+                    // ゲームプレイ中に誤って文字が入力されるのを防ぐ
+                    e.preventDefault();
+                }
+            }
 
             // キーマッピングリストのハイライト
             const keyItem = document.getElementById(`key-${e.code}`);
@@ -1149,6 +1398,7 @@
         }
 
         // ページ読み込み時にキーボードとキーマッピングを表示
+        loadKeyboardMode();
         renderKeyboard();
         renderKeyMapping();
         addLog('JoyDeckが起動しました');

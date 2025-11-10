@@ -26,14 +26,15 @@ WiFiClient client;
 // Switchコントローラーのボタン定義
 enum SwitchButton {
   BTN_A, BTN_B, BTN_X, BTN_Y,
-  BTN_L, BTN_R, BTN_ZL, BTN_ZR,
+  BTN_L1, BTN_L2, BTN_L3, BTN_R1, BTN_R2, BTN_R3,
+  BTN_ZL, BTN_ZR,
   BTN_PLUS, BTN_MINUS, BTN_HOME, BTN_CAPTURE,
   BTN_UP, BTN_DOWN, BTN_LEFT, BTN_RIGHT,
   BTN_L_STICK_CLICK, BTN_R_STICK_CLICK
 };
 
 // 現在のボタン状態
-bool buttonStates[18] = {false};
+bool buttonStates[22] = {false}; // ボタン数が増えたので配列サイズを更新
 
 void setup() {
   Serial.begin(115200);
@@ -92,6 +93,8 @@ void processCommand(String command) {
     processDpadCommand(command);
   } else if (command.startsWith("STICK:")) {
     processStickCommand(command);
+  } else if (command.startsWith("KEYBOARD:")) {
+    processKeyboardCommand(command);
   }
 }
 
@@ -182,10 +185,13 @@ SwitchButton parseButton(String button) {
   if (button == "B") return BTN_B;
   if (button == "X") return BTN_X;
   if (button == "Y") return BTN_Y;
-  if (button == "L") return BTN_L;
-  if (button == "R") return BTN_R;
-  if (button == "ZL") return BTN_ZL;
-  if (button == "ZR") return BTN_ZR;
+  // L1→L, R1→R, L2→ZL, R2→ZRとして扱う
+  if (button == "L" || button == "L1") return BTN_L1;  // L1 = L
+  if (button == "ZL" || button == "L2") return BTN_L2; // L2 = ZL
+  if (button == "L3") return BTN_L3;
+  if (button == "R" || button == "R1") return BTN_R1;   // R1 = R
+  if (button == "ZR" || button == "R2") return BTN_R2; // R2 = ZR
+  if (button == "R3") return BTN_R3;
   if (button == "PLUS") return BTN_PLUS;
   if (button == "MINUS") return BTN_MINUS;
   if (button == "HOME") return BTN_HOME;
@@ -225,5 +231,70 @@ void sendStickPosition(bool leftStick, int x, int y) {
   Serial.print(x);
   Serial.print(", Y: ");
   Serial.println(y);
+}
+
+// キーボード入力コマンドを処理
+void processKeyboardCommand(String cmd) {
+  // フォーマット: "KEYBOARD:CHAR:a" または "KEYBOARD:KEY:ENTER"
+  int firstColon = cmd.indexOf(':');
+  int secondColon = cmd.indexOf(':', firstColon + 1);
+  
+  if (firstColon == -1 || secondColon == -1) {
+    return;
+  }
+  
+  String type = cmd.substring(firstColon + 1, secondColon);
+  String value = cmd.substring(secondColon + 1);
+  
+  if (type == "CHAR") {
+    // 文字入力: USB HIDキーボードとして送信
+    sendKeyboardChar(value.charAt(0));
+  } else if (type == "KEY") {
+    // 特殊キー入力
+    sendKeyboardKey(value);
+  }
+}
+
+// 文字をUSB HIDキーボードとして送信
+void sendKeyboardChar(char c) {
+  // TODO: USB HIDキーボードライブラリを使用して実装
+  // 例: Keyboard.write(c);
+  // または、Switch用のHIDキーボードライブラリを使用
+  
+  Serial.print("Keyboard char: ");
+  Serial.println(c);
+  
+  // 注意: 実際の実装では、USB HIDキーボードプロトコルを使用する必要があります
+  // Arduino Leonardo/Micro/Pro Microなどの場合:
+  // #include <Keyboard.h>
+  // Keyboard.write(c);
+  
+  // ESP32などの場合、USB HIDライブラリが必要です
+}
+
+// 特殊キーをUSB HIDキーボードとして送信
+void sendKeyboardKey(String key) {
+  // TODO: USB HIDキーボードライブラリを使用して実装
+  // 例: 
+  // if (key == "ENTER") Keyboard.press(KEY_RETURN);
+  // else if (key == "BACKSPACE") Keyboard.press(KEY_BACKSPACE);
+  // ...
+  
+  Serial.print("Keyboard key: ");
+  Serial.println(key);
+  
+  // 注意: 実際の実装では、USB HIDキーボードプロトコルを使用する必要があります
+  // Arduino Leonardo/Micro/Pro Microなどの場合:
+  // #include <Keyboard.h>
+  // if (key == "ENTER") {
+  //   Keyboard.press(KEY_RETURN);
+  //   Keyboard.release(KEY_RETURN);
+  // } else if (key == "BACKSPACE") {
+  //   Keyboard.press(KEY_BACKSPACE);
+  //   Keyboard.release(KEY_BACKSPACE);
+  // }
+  // ...
+  
+  // ESP32などの場合、USB HIDライブラリが必要です
 }
 
