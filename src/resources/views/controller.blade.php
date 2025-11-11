@@ -181,7 +181,6 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            width: 100%;
         }
 
         .btn-primary {
@@ -214,17 +213,24 @@
         .log {
             background: #f8f9fa;
             border-radius: 8px;
-            padding: 15px;
-            max-height: 400px;
+            padding: 20px;
+            max-height: 500px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
-            font-size: 12px;
+            font-size: 14px;
             margin-top: 0;
+            border: 1px solid #dee2e6;
         }
 
         .log-entry {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             color: #333;
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
         }
 
         .log-entry.error {
@@ -347,31 +353,35 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.7);
             overflow-y: auto;
+            padding: 20px;
         }
 
         .modal.active {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
         }
 
         .modal-content {
             background: white;
             border-radius: 15px;
-            padding: 30px;
-            max-width: 900px;
-            width: 90%;
-            max-height: 90vh;
+            padding: 25px;
+            max-width: 1000px;
+            width: 95%;
+            max-height: calc(100vh - 80px);
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             position: relative;
+            margin: auto;
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             padding-bottom: 15px;
             border-bottom: 2px solid #e0e0e0;
         }
@@ -379,30 +389,44 @@
         .modal-header h2 {
             margin: 0;
             color: #333;
+            font-size: 24px;
         }
 
         .close-modal {
             background: #dc3545;
             color: white;
             border: none;
-            border-radius: 5px;
-            padding: 8px 16px;
+            border-radius: 8px;
+            padding: 10px 20px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
         }
 
         .close-modal:hover {
             background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
         }
 
         .settings-section {
             margin-bottom: 30px;
         }
 
+        .settings-section:last-child {
+            margin-bottom: 0;
+        }
+
         .settings-section h3 {
             color: #333;
             margin-bottom: 15px;
-            font-size: 18px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .settings-section p {
+            line-height: 1.8;
         }
 
         .key-selector {
@@ -564,9 +588,22 @@
         .modal-footer {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
+            align-items: center;
+            margin-top: 25px;
             padding-top: 20px;
             border-top: 2px solid #e0e0e0;
+        }
+
+        .modal-footer .btn-small {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .modal-footer .btn-small:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         /* レスポンシブ対応 */
@@ -588,6 +625,16 @@
             .button-group button {
                 flex: 1;
                 min-width: 150px;
+            }
+
+            .modal-content {
+                width: 98%;
+                padding: 20px;
+                max-height: calc(100vh - 40px);
+            }
+
+            .modal-header h2 {
+                font-size: 20px;
             }
         }
 
@@ -617,6 +664,33 @@
             .key-switch-label {
                 font-size: 8px;
             }
+
+            .modal-content {
+                padding: 15px;
+            }
+
+            .modal-header h2 {
+                font-size: 18px;
+            }
+
+            .settings-section h3 {
+                font-size: 16px;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-footer > div {
+                width: 100%;
+                display: flex;
+                gap: 10px;
+            }
+
+            .modal-footer .btn-small {
+                flex: 1;
+            }
         }
     </style>
 </head>
@@ -634,13 +708,13 @@
                     キーマッピング設定
                 </button>
                 <button id="keyboardModeBtn" class="btn-primary" onclick="toggleKeyboardMode()" style="background: #17a2b8;">
-                    <span id="keyboardModeText">キーボードモード</span>
+                    <span id="keyboardModeText">モード変更</span>
                 </button>
                 <button id="instructionsBtn" class="btn-primary" onclick="openInstructions()" style="background: #6c757d;">
-                    📋 使い方
+                    使い方
                 </button>
                 <button id="logBtn" class="btn-primary" onclick="openLog()" style="background: #6c757d;">
-                    📝 ログ
+                    ログ
                 </button>
             </div>
         </div>
@@ -656,7 +730,7 @@
 
             <div class="accordion">
                 <div class="accordion-header" onclick="toggleKeyMapping()">
-                    <h3>📋 キーマッピング</h3>
+                    <h3>キーマッピング</h3>
                     <span class="accordion-icon" id="keyMappingIcon">▼</span>
                 </div>
                 <div class="accordion-content" id="keyMappingContent">
@@ -673,12 +747,11 @@
     <div id="settingsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>⚙️ キーマッピング設定</h2>
-                <button class="close-modal" onclick="closeSettings()">閉じる</button>
+                <h2>キーマッピング設定</h2>
             </div>
 
             <div class="settings-section">
-                <h3>📝 設定方法</h3>
+                <h3>設定方法</h3>
                 <p style="color: #666; margin-bottom: 15px;">
                     1. 下のキーボードビューから設定したいキーをクリック<br>
                     2. 右側のSwitchボタン一覧から割り当てたいボタンを選択<br>
@@ -687,7 +760,7 @@
             </div>
 
             <div class="settings-section">
-                <h3>⌨️ キーボード（クリックして設定）</h3>
+                <h3>キーボード（クリックして設定）</h3>
                 <div class="keyboard-container" style="margin-bottom: 20px;">
                     <div class="keyboard" id="settingsKeyboard">
                         <!-- 設定用キーボードはJavaScriptで動的に生成 -->
@@ -696,14 +769,14 @@
             </div>
 
             <div class="settings-section">
-                <h3>🎮 Switchボタン選択</h3>
+                <h3>ボタン選択</h3>
                 <div id="switchButtonSelector" class="key-selector">
                     <!-- SwitchボタンはJavaScriptで動的に生成 -->
                 </div>
             </div>
 
             <div class="settings-section">
-                <h3>📋 現在のマッピング一覧</h3>
+                <h3>現在のマッピング一覧</h3>
                 <div id="mappingList">
                     <!-- マッピング一覧はJavaScriptで動的に生成 -->
                 </div>
@@ -729,8 +802,7 @@
     <div id="instructionsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📋 使い方</h2>
-                <button class="close-modal" onclick="closeInstructions()">閉じる</button>
+                <h2>使い方</h2>
             </div>
 
             <div class="settings-section">
@@ -777,26 +849,26 @@
     <script>
         // Switchボタンの定義
         const switchButtons = {
-            'UP': { label: '上', icon: '⬆️', keyboardLabel: '上' },
-            'DOWN': { label: '下', icon: '⬇️', keyboardLabel: '下' },
-            'LEFT': { label: '左', icon: '⬅️', keyboardLabel: '左' },
-            'RIGHT': { label: '右', icon: '➡️', keyboardLabel: '右' },
-            'A': { label: 'Aボタン', icon: '🔴', keyboardLabel: 'A' },
-            'B': { label: 'Bボタン', icon: '🔵', keyboardLabel: 'B' },
-            'X': { label: 'Xボタン', icon: '🟡', keyboardLabel: 'X' },
-            'Y': { label: 'Yボタン', icon: '🟢', keyboardLabel: 'Y' },
-            'L1': { label: 'L1(L)ボタン', icon: 'L1', keyboardLabel: 'L1(L)' },
-            'L2': { label: 'L2(ZL)ボタン', icon: 'L2', keyboardLabel: 'L2(ZL)' },
-            'L3': { label: 'L3ボタン', icon: 'L3', keyboardLabel: 'L3' },
-            'R1': { label: 'R1(R)ボタン', icon: 'R1', keyboardLabel: 'R1(R)' },
-            'R2': { label: 'R2(ZR)ボタン', icon: 'R2', keyboardLabel: 'R2(ZR)' },
-            'R3': { label: 'R3ボタン', icon: 'R3', keyboardLabel: 'R3' },
-            'PLUS': { label: 'プラス', icon: '+', keyboardLabel: '+' },
-            'MINUS': { label: 'マイナス', icon: '-', keyboardLabel: '-' },
-            'HOME': { label: 'ホーム', icon: '🏠', keyboardLabel: '⌂' },
-            'CAPTURE': { label: 'キャプチャ', icon: '📷', keyboardLabel: '●' },
-            'L_STICK_CLICK': { label: '左スティック押し込み', icon: '🕹️', keyboardLabel: 'LS' },
-            'R_STICK_CLICK': { label: '右スティック押し込み', icon: '🕹️', keyboardLabel: 'RS' },
+            'UP': { label: '上', keyboardLabel: '上' },
+            'DOWN': { label: '下', keyboardLabel: '下' },
+            'LEFT': { label: '左', keyboardLabel: '左' },
+            'RIGHT': { label: '右', keyboardLabel: '右' },
+            'A': { label: 'Aボタン', keyboardLabel: 'A' },
+            'B': { label: 'Bボタン', keyboardLabel: 'B' },
+            'X': { label: 'Xボタン', keyboardLabel: 'X' },
+            'Y': { label: 'Yボタン', keyboardLabel: 'Y' },
+            'L1': { label: 'L1(L)ボタン', keyboardLabel: 'L1(L)' },
+            'L2': { label: 'L2(ZL)ボタン', keyboardLabel: 'L2(ZL)' },
+            'L3': { label: 'L3ボタン', keyboardLabel: 'L3' },
+            'R1': { label: 'R1(R)ボタン', keyboardLabel: 'R1(R)' },
+            'R2': { label: 'R2(ZR)ボタン', keyboardLabel: 'R2(ZR)' },
+            'R3': { label: 'R3ボタン', keyboardLabel: 'R3' },
+            'PLUS': { label: '＋', keyboardLabel: '＋' },
+            'MINUS': { label: '－', keyboardLabel: '－' },
+            'HOME': { label: 'ホーム', keyboardLabel: '⌂' },
+            'CAPTURE': { label: 'キャプチャ', keyboardLabel: '●' },
+            'L_STICK_CLICK': { label: 'LS', keyboardLabel: 'LS' },
+            'R_STICK_CLICK': { label: 'RS', keyboardLabel: 'RS' },
         };
 
         // デフォルトのキーマッピング
@@ -1186,11 +1258,11 @@
             
             if (keyboardMode === 'controller') {
                 btn.style.background = '#667eea';
-                text.textContent = 'コントローラーモード';
+                text.textContent = 'モード変更';
                 btn.classList.add('active');
             } else {
                 btn.style.background = '#28a745';
-                text.textContent = 'キーボードモード';
+                text.textContent = 'モード変更';
                 btn.classList.remove('active');
             }
         }
@@ -1481,7 +1553,7 @@
                 const button = document.createElement('div');
                 button.className = 'switch-button-option';
                 button.dataset.switchButton = code;
-                button.innerHTML = `${info.icon} ${info.label}`;
+                button.innerHTML = info.label;
                 button.addEventListener('click', () => selectSwitchButton(code));
                 container.appendChild(button);
             });
@@ -1508,7 +1580,7 @@
                 item.innerHTML = `
                     <div class="key-config-item-info">
                         <span class="key-config-item-key">${keyLabel}</span>
-                        <span class="key-config-item-switch">→ ${switchInfo.icon} ${switchInfo.label}</span>
+                        <span class="key-config-item-switch">→ ${switchInfo.label}</span>
                     </div>
                     <div class="key-config-item-actions">
                         <button class="btn-small btn-edit" onclick="selectKeyForMapping('${keyCode}'); document.querySelector('[data-switch-button=\"${mapping.switchButton}\"]').scrollIntoView({behavior: 'smooth', block: 'center'});">
